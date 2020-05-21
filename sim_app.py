@@ -62,14 +62,46 @@ MIN_SPEED = 0
 MAX_SPEED = 3
 TOTAL_PPL = 1000
 START_INFECTED = 5
-QUARANTINED_PERCENT = 0.8
+QUARANTINED_PERCENT = 0
 DT = 0.5
+PROXIMITY_INFECTIONS = 0.1
 
 
 def text_objects(text, font):
     textSurface = font.render(text, True, (255, 255, 255))
     return textSurface, textSurface.get_rect()
 
+
+def rect_distance(x1, y1, x1b, y1b, x2, y2, x2b, y2b):
+    left = x2b < x1
+    right = x1b < x2
+    bottom = y2b < y1
+    top = y1b < y2
+    if top and left:
+        return dist(x1, y1b, x2b, y2)
+    elif left and bottom:
+        return dist(x1, y1, x2b, y2b)
+    elif bottom and right:
+        return dist(x1b, y1, x2, y2b)
+    elif right and top:
+        return dist(x1b, y1b, x2, y2)
+    elif left:
+        return x1 - x2b
+    elif right:
+        return x2 - x1b
+    elif bottom:
+        return y1 - y2b
+    elif top:
+        return y2 - y1b
+    else:
+        return 0
+
+
+def dist(a, b, c, d):
+    return ((a-b)**2 + (c-d)**2)**0.5
+
+
+# try:
 
 running = True
 persons = []
@@ -97,10 +129,14 @@ while running:
         for j in infected:
             if persons[i]:
                 p = persons[i]
-                if p.rect.colliderect(j.rect):
-                    p.infected = True
-                    infected.append(p)
-                    persons[i] = None
+                d = rect_distance(p.rect.top, p.rect.left, p.rect.bottom, p.rect.right,
+                                  j.rect.top, j.rect.left, j.rect.bottom, j.rect.right)
+                if d < 6:
+                    r = randint(0, int((1-PROXIMITY_INFECTIONS)*10 * d))
+                    if r == 0:
+                        p.infected = True
+                        infected.append(p)
+                        persons[i] = None
         if persons[i]:
             persons[i].update()
             screen.blit(persons[i].surf, persons[i].rect)
@@ -110,10 +146,11 @@ while running:
         i.update()
 
     count.append(len(infected))
-    if count[-1] == 1000:
+    if count[-1] == TOTAL_PPL:
         break
 
     pygame.display.flip()
-
+# except:
+print(count)
 plt.plot(count)
 plt.show()
