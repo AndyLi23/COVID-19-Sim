@@ -25,7 +25,7 @@ class Person():
 
         if not self.quarantine:
 
-            speed = randint(MIN_SPEED, MAX_SPEED)
+            speed = randint(MIN_SPEED, int(MAX_SPEED*DT))
 
             self.cnt = (self.cnt+1) % self.n
 
@@ -59,12 +59,13 @@ SCREEN_HEIGHT = 800
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
 MIN_SPEED = 0
-MAX_SPEED = 3
-TOTAL_PPL = 300
+MAX_SPEED = 6
+TOTAL_PPL = 1000
 START_INFECTED = 1
-QUARANTINED_PERCENT = 0.9
-DT = 1
-PROXIMITY_INFECTIONS = 0.1
+QUARANTINED_PERCENT = 0.8
+DT = 0.5
+PROXIMITY_INFECTIONS = 0.2
+DIST = 12
 
 
 def text_objects(text, font):
@@ -129,7 +130,7 @@ while running:
                 p = persons[i]
                 d = rect_distance(p.rect.top, p.rect.left, p.rect.bottom, p.rect.right,
                                   j.rect.top, j.rect.left, j.rect.bottom, j.rect.right)
-                if d < 12*DT:
+                if d < DIST*DT:
                     r = randint(0, int((1-PROXIMITY_INFECTIONS)*10 * d/DT))
                     if r == 0:
                         p.infected = True
