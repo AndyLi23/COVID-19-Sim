@@ -60,10 +60,10 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
 MIN_SPEED = 0
 MAX_SPEED = 3
-TOTAL_PPL = 1000
-START_INFECTED = 5
-QUARANTINED_PERCENT = 0
-DT = 0.5
+TOTAL_PPL = 300
+START_INFECTED = 1
+QUARANTINED_PERCENT = 0.9
+DT = 1
 PROXIMITY_INFECTIONS = 0.1
 
 
@@ -101,8 +101,6 @@ def dist(a, b, c, d):
     return ((a-b)**2 + (c-d)**2)**0.5
 
 
-# try:
-
 running = True
 persons = []
 infected = []
@@ -113,16 +111,16 @@ for i in range(START_INFECTED):
 for i in range(int((TOTAL_PPL - START_INFECTED)*(1-QUARANTINED_PERCENT))):
     persons.append(Person(randint(0, SCREEN_WIDTH),
                           randint(0, SCREEN_HEIGHT)))
-for i in range(int((TOTAL_PPL-START_INFECTED)*(QUARANTINED_PERCENT))):
+for i in range(int((TOTAL_PPL-START_INFECTED)*(QUARANTINED_PERCENT)+1)):
     persons.append(Person(randint(0, SCREEN_WIDTH),
                           randint(0, SCREEN_HEIGHT), quarantined=True))
 while running:
     for event in pygame.event.get():
         if event.type == KEYDOWN:
             if event.key == K_ESCAPE:
-                pygame.quit()
+                running = False
         elif event.type == QUIT:
-            pygame.quit()
+            running = False
     screen.fill((0, 0, 0))
 
     for i in range(len(persons)):
@@ -131,8 +129,8 @@ while running:
                 p = persons[i]
                 d = rect_distance(p.rect.top, p.rect.left, p.rect.bottom, p.rect.right,
                                   j.rect.top, j.rect.left, j.rect.bottom, j.rect.right)
-                if d < 6:
-                    r = randint(0, int((1-PROXIMITY_INFECTIONS)*10 * d))
+                if d < 12*DT:
+                    r = randint(0, int((1-PROXIMITY_INFECTIONS)*10 * d/DT))
                     if r == 0:
                         p.infected = True
                         infected.append(p)
@@ -147,10 +145,11 @@ while running:
 
     count.append(len(infected))
     if count[-1] == TOTAL_PPL:
-        break
+        running = False
 
     pygame.display.flip()
-# except:
+
+running = False
 print(count)
 plt.plot(count)
 plt.show()
